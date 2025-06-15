@@ -1,4 +1,4 @@
-package io.hotmail.com.jacob_vejvoda.infernal_mobs;
+package io.hotmail.com.jacob_vejvoda.infernal_mobs.utils;
 
 import com.google.common.collect.Lists;
 import org.bukkit.NamespacedKey;

@@ -1,5 +1,8 @@
-package io.hotmail.com.jacob_vejvoda.infernal_mobs;
+package io.hotmail.com.jacob_vejvoda.infernal_mobs.listeners;
 
+import io.hotmail.com.jacob_vejvoda.infernal_mobs.data.InfernalMob;
+import io.hotmail.com.jacob_vejvoda.infernal_mobs.utils.PDC;
+import io.hotmail.com.jacob_vejvoda.infernal_mobs.PluginMain;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
@@ -21,19 +24,19 @@ import java.util.Objects;
 import java.util.logging.Level;
 
 public class GUI implements Listener {
-    private static infernal_mobs plugin;
+    private static PluginMain plugin;
     private static final Map<String, Scoreboard> playerScoreBoard = new HashMap<>();
     private static final Map<Entity, Object> bossBars = new HashMap<>();
 
-    GUI(infernal_mobs instance) {
+    public GUI(PluginMain instance) {
         plugin = instance;
     }
 
     public static Entity getNearbyBoss(Player p) {
         double dis = 26.0D;
         for (InfernalMob m : plugin.infernalList) {
-            if (m.entity.getWorld().equals(p.getWorld())) {
-                Entity boss = m.entity;
+            Entity boss = m.getEntity();
+            if (boss.getWorld().equals(p.getWorld())) {
                 if (p.getLocation().distance(boss.getLocation()) < dis) {
                     // dis = p.getLocation().distance(boss.getLocation());
                     return boss;
@@ -43,7 +46,7 @@ public class GUI implements Listener {
         return null;
     }
 
-    static void fixBar(Player p) {
+    public static void fixBar(Player p) {
         //System.out.println("fixBar");
         Entity b = getNearbyBoss(p);
         if (b != null) {

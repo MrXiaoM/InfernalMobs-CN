@@ -1,5 +1,7 @@
-package io.hotmail.com.jacob_vejvoda.infernal_mobs;
+package io.hotmail.com.jacob_vejvoda.infernal_mobs.listeners;
 
+import io.hotmail.com.jacob_vejvoda.infernal_mobs.utils.PDC;
+import io.hotmail.com.jacob_vejvoda.infernal_mobs.PluginMain;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -35,11 +37,11 @@ import org.bukkit.util.Vector;
 import java.util.*;
 import java.util.logging.Level;
 
-public class EventListener implements Listener {
-    private static infernal_mobs plugin;
+public class EntityListener implements Listener {
+    private static PluginMain plugin;
     private final Map<String, Long> spawnerMap = new HashMap<>();
 
-    EventListener(infernal_mobs instance) {
+    public EntityListener(PluginMain instance) {
         plugin = instance;
     }
     

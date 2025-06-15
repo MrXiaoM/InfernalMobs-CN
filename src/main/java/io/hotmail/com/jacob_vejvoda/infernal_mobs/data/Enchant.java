@@ -1,4 +1,4 @@
-package io.hotmail.com.jacob_vejvoda.infernal_mobs;
+package io.hotmail.com.jacob_vejvoda.infernal_mobs.data;
 
 import org.bukkit.enchantments.Enchantment;
 

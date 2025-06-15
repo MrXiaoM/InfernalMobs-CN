@@ -1,5 +1,5 @@
 name: InfernalMobs
-main: io.hotmail.com.jacob_vejvoda.infernal_mobs.infernal_mobs
+main: io.hotmail.com.jacob_vejvoda.infernal_mobs.PluginMain
 version: ${version}
 softdepend: [Vault, WizardlyMagic]
 api-version: 1.13

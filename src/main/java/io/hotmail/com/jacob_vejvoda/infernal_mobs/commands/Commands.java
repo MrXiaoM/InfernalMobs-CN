@@ -1,5 +1,8 @@
-package io.hotmail.com.jacob_vejvoda.infernal_mobs;
+package io.hotmail.com.jacob_vejvoda.infernal_mobs.commands;
 
+import io.hotmail.com.jacob_vejvoda.infernal_mobs.data.InfernalMob;
+import io.hotmail.com.jacob_vejvoda.infernal_mobs.utils.PDC;
+import io.hotmail.com.jacob_vejvoda.infernal_mobs.PluginMain;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -21,8 +24,8 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class Commands implements CommandExecutor, TabCompleter {
-    private final infernal_mobs plugin;
-    public Commands(infernal_mobs plugin) {
+    private final PluginMain plugin;
+    public Commands(PluginMain plugin) {
         this.plugin = plugin;
         PluginCommand command = plugin.getCommand("infernalmobs");
         if (command != null) {
