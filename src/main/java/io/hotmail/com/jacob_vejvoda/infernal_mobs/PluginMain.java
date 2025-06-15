@@ -1,10 +1,5 @@
 package io.hotmail.com.jacob_vejvoda.infernal_mobs;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.util.*;
-import java.util.logging.Level;
-
 import io.hotmail.com.jacob_vejvoda.infernal_mobs.commands.Commands;
 import io.hotmail.com.jacob_vejvoda.infernal_mobs.data.Enchant;
 import io.hotmail.com.jacob_vejvoda.infernal_mobs.data.InfernalMob;
@@ -22,43 +17,14 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Ageable;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Chicken;
-import org.bukkit.entity.Cow;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Fireball;
-import org.bukkit.entity.Firework;
-import org.bukkit.entity.Horse;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.MushroomCow;
-import org.bukkit.entity.Ocelot;
-import org.bukkit.entity.Pig;
-import org.bukkit.entity.PigZombie;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Sheep;
-import org.bukkit.entity.Skeleton;
-import org.bukkit.entity.ThrownPotion;
-import org.bukkit.entity.Villager;
-import org.bukkit.entity.WitherSkull;
-import org.bukkit.entity.Wolf;
-import org.bukkit.entity.Zombie;
+import org.bukkit.entity.*;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.meta.BannerMeta;
-import org.bukkit.inventory.meta.BlockStateMeta;
-import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.inventory.meta.EnchantmentStorageMeta;
-import org.bukkit.inventory.meta.FireworkMeta;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.inventory.meta.*;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -69,6 +35,14 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.util.*;
+import java.util.logging.Level;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class PluginMain extends JavaPlugin implements Listener {
@@ -83,7 +57,7 @@ public class PluginMain extends JavaPlugin implements Listener {
     public List<Player> fertileList = new ArrayList();
 
     @SuppressWarnings("deprecation")
-	public void onEnable() {
+    public void onEnable() {
         //Register Events
         getServer().getPluginManager().registerEvents(this, this);
         EntityListener events = new EntityListener(this);
@@ -137,13 +111,13 @@ public class PluginMain extends JavaPlugin implements Listener {
                     if (in == null) {
                         throw new IllegalArgumentException("The embedded resource '" + configVersion + "_config.yml' cannot be found in " + getFile());
                     }
-                     try (OutputStream out = Files.newOutputStream(configFile.toPath())) {
-                         byte[] buf = new byte[1024];
-                         int len;
-                         while ((len = in.read(buf)) > 0) {
-                             out.write(buf, 0, len);
-                         }
-                     }
+                    try (OutputStream out = Files.newOutputStream(configFile.toPath())) {
+                        byte[] buf = new byte[1024];
+                        int len;
+                        while ((len = in.read(buf)) > 0) {
+                            out.write(buf, 0, len);
+                        }
+                    }
                 } catch (Exception ex) {
                     getLogger().log(Level.SEVERE, "Could not save " + configVersion + "_config.yml to " + configFile, ex);
                 }
@@ -373,7 +347,7 @@ public class PluginMain extends JavaPlugin implements Listener {
 
     public void addHealth(Entity ent, List<String> powerList) {
         //double maxHealth = ((org.bukkit.entity.Damageable) ent).getHealth();
-    	double maxHealth = ((LivingEntity) ent).getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+        double maxHealth = ((LivingEntity) ent).getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
         float setHealth;
         if (getConfig().getBoolean("healthByPower")) {
             int mobIndex = idSearch(ent.getUniqueId());
@@ -545,27 +519,29 @@ public class PluginMain extends JavaPlugin implements Listener {
     }
 
     public ItemStack getLoot(Player player, int loot) {
-    	ItemStack i = null;
-    	try {
-	        if (!this.lootFile.getStringList("loot." + loot + ".commands").isEmpty()) {
-	            List<String> commandList = this.lootFile.getStringList("loot." + loot + ".commands");
-	            for (String command : commandList) {
-	                command = ChatColor.translateAlternateColorCodes('&', command);
-	                command = command.replace("player", player.getName());
-	                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
-	            }
-	        }
-	//        if (this.lootFile.getString("loot." + loot + ".staff.id") != null) {
-	//            int id = this.lootFile.getInt("loot." + loot + ".staff.id");
-	//            ArrayList<String> spells = new ArrayList();
-	//            if (!this.lootFile.getStringList("loot." + loot + ".staff.spells").isEmpty()) {
-	//                spells = (ArrayList) this.lootFile.getStringList("loot." + loot + ".staff.spells");
-	//            }
-	//            return this.wMagic.getStaffWithSpells(id, spells);
-	//        }
-	        i = getItem(loot);
-    	}catch(Exception x) {getServer().getLogger().log(Level.WARNING, "No loot found with ID: " + loot);}
-    	return i;
+        ItemStack i = null;
+        try {
+            if (!this.lootFile.getStringList("loot." + loot + ".commands").isEmpty()) {
+                List<String> commandList = this.lootFile.getStringList("loot." + loot + ".commands");
+                for (String command : commandList) {
+                    command = ChatColor.translateAlternateColorCodes('&', command);
+                    command = command.replace("player", player.getName());
+                    Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+                }
+            }
+            //        if (this.lootFile.getString("loot." + loot + ".staff.id") != null) {
+            //            int id = this.lootFile.getInt("loot." + loot + ".staff.id");
+            //            ArrayList<String> spells = new ArrayList();
+            //            if (!this.lootFile.getStringList("loot." + loot + ".staff.spells").isEmpty()) {
+            //                spells = (ArrayList) this.lootFile.getStringList("loot." + loot + ".staff.spells");
+            //            }
+            //            return this.wMagic.getStaffWithSpells(id, spells);
+            //        }
+            i = getItem(loot);
+        } catch (Exception x) {
+            getServer().getLogger().log(Level.WARNING, "No loot found with ID: " + loot);
+        }
+        return i;
     }
 
     private Material getMaterial(String s) {
@@ -728,15 +704,17 @@ public class PluginMain extends JavaPlugin implements Listener {
             }
             //System.out.println("Enchantments Found: " + enchAmount);
             if (enchAmount > 0) {
-                int enMin = enchAmount/2;
-                if(enMin<1) {enMin=1;}
+                int enMin = enchAmount / 2;
+                if (enMin < 1) {
+                    enMin = 1;
+                }
                 int enMax = enchAmount;
                 if ((this.lootFile.getString("loot." + loot + ".minEnchantments") != null) && (this.lootFile.getString("loot." + loot + ".maxEnchantments") != null)) {
                     enMin = this.lootFile.getInt("loot." + loot + ".minEnchantments");
                     enMax = this.lootFile.getInt("loot." + loot + ".maxEnchantments");
                 }
                 //int enchNeeded = new Random().nextInt(enMax + 1 - enMin) + enMin;
-                int enchNeeded = rand(enMin,enMax);
+                int enchNeeded = rand(enMin, enMax);
                 //System.out.println("Enchantments Needed: " + enchNeeded);
                 List<Enchant> enchList = new ArrayList();
                 int safety = 0;
@@ -787,7 +765,7 @@ public class PluginMain extends JavaPlugin implements Listener {
                         //System.out.println("Error: No valid drops found!");
                         //System.out.println("Error: Please increase chance for enchantments on item " + loot);
                         //return null;
-                    	break;
+                        break;
                     }
                 } while (enchList.size() != enchNeeded);
                 for (Enchant le : enchList) {
@@ -812,7 +790,7 @@ public class PluginMain extends JavaPlugin implements Listener {
         if (s != null) {
             fc.set(path + ".item", s.getType().toString());
             fc.set(path + ".amount", s.getAmount());
-            fc.set(path + ".durability", ((Damageable)s).getDamage());
+            fc.set(path + ".durability", ((Damageable) s).getDamage());
             if (s.getItemMeta() != null) {
                 fc.set(path + ".name", s.getItemMeta().getDisplayName());
                 if (s.getItemMeta().getLore() != null) {
@@ -948,27 +926,28 @@ public class PluginMain extends JavaPlugin implements Listener {
     private int getIntFromString(String setAmountString) {
         int setAmount = 1;
         try {
-	        if (setAmountString.contains("-")) {
-	            String[] split = setAmountString.split("-");
-	            try {
-	                int minSetAmount = Integer.parseInt(split[0]);
-	                int maxSetAmount = Integer.parseInt(split[1]);
-	                setAmount = new Random().nextInt(maxSetAmount - minSetAmount + 1) + minSetAmount;
-	            } catch (Exception e) {
-	                System.out.println("getIntFromString: " + e);
-	            }
-	        } else {
-	            setAmount = Integer.parseInt(setAmountString);
-	        }
-        } catch(Exception ignored) {}
+            if (setAmountString.contains("-")) {
+                String[] split = setAmountString.split("-");
+                try {
+                    int minSetAmount = Integer.parseInt(split[0]);
+                    int maxSetAmount = Integer.parseInt(split[1]);
+                    setAmount = new Random().nextInt(maxSetAmount - minSetAmount + 1) + minSetAmount;
+                } catch (Exception e) {
+                    System.out.println("getIntFromString: " + e);
+                }
+            } else {
+                setAmount = Integer.parseInt(setAmountString);
+            }
+        } catch (Exception ignored) {
+        }
         return setAmount;
 
     }
 
     private boolean isBaby(Entity mob) {
-    	if(mob instanceof Ageable) {
-    		return !((Ageable)mob).isAdult();
-    	}
+        if (mob instanceof Ageable) {
+            return !((Ageable) mob).isAdult();
+        }
         return false;
     }
 
@@ -1130,12 +1109,12 @@ public class PluginMain extends JavaPlugin implements Listener {
                                     InfernalMob oneUpper = infernalList.get(index);
                                     if (oneUpper.getLives() > 1) {
                                         //System.out.print("1");//-------------------------------Debug
-                                       // ((org.bukkit.entity.Damageable) mob).setHealth(((org.bukkit.entity.Damageable) mob).);
+                                        // ((org.bukkit.entity.Damageable) mob).setHealth(((org.bukkit.entity.Damageable) mob).);
 
                                         //System.out.print("UP!");//-------------------------------Debug
                                         //InfernalMob newMob = new InfernalMob(mob, id, mob.getWorld(), oneUpper.infernal, abilityList, 1, getEffect());
                                         //infernalList.set(index, newMob);
-                                    	((LivingEntity) mob).setHealth(((LivingEntity) mob).getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue());
+                                        ((LivingEntity) mob).setHealth(((LivingEntity) mob).getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue());
                                         oneUpper.setLives(oneUpper.getLives() - 1);
                                     }
                                 }
@@ -1269,7 +1248,8 @@ public class PluginMain extends JavaPlugin implements Listener {
                                                 itemsPlayerHas.add(neededItem);
                                         }
                                     }
-                                } catch (Exception ignored) {}
+                                } catch (Exception ignored) {
+                                }
                             }
                         }
 
@@ -1305,22 +1285,22 @@ public class PluginMain extends JavaPlugin implements Listener {
     }
 
     public void applyEatEffects(LivingEntity e, int effectID) {
-    	for(String s : this.lootFile.getStringList("consumeEffects." + effectID + ".potionEffects")) {
-    		String[] split = s.split(":");
-    		String name = split[0];
-    		int level = Integer.parseInt(split[1]);
-	        int time = Integer.parseInt(split[2]);
-	        if ((name.equalsIgnoreCase("fertility")) && (e instanceof Player)) {
-	        	fertileList.add(((Player)e));
-	        	final Player p = (Player) e;
-				Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, () -> fertileList.remove(p), time * 20L);
-	        } else {
+        for (String s : this.lootFile.getStringList("consumeEffects." + effectID + ".potionEffects")) {
+            String[] split = s.split(":");
+            String name = split[0];
+            int level = Integer.parseInt(split[1]);
+            int time = Integer.parseInt(split[2]);
+            if ((name.equalsIgnoreCase("fertility")) && (e instanceof Player)) {
+                fertileList.add(((Player) e));
+                final Player p = (Player) e;
+                Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, () -> fertileList.remove(p), time * 20L);
+            } else {
                 PotionEffectType type = PotionEffectType.getByName(name);
                 if (type != null) {
                     e.addPotionEffect(new PotionEffect(type, time * 20, level - 1));
                 }
             }
-    	}
+        }
         if (e instanceof Player) {
             e.sendMessage(this.lootFile.getString("consumeEffects." + effectID + ".message", "").replace("&", "§"));
         }
@@ -1368,13 +1348,13 @@ public class PluginMain extends JavaPlugin implements Listener {
                                 if ((needMeta == null) || (usedMeta.getDisplayName().equals(needMeta.getDisplayName()))) {
                                     if (itemUsed.getType().equals(neededItem.getType())) {
                                         //if ((neededItem.getType().getMaxDurability() > 0) || (itemUsed.getDurability() == (neededItem.getDurability()))) {
-                                            //Player Using Item
-                                            if (effectsPlayer) {
-                                                applyEffects(player, i);
-                                            } else {
-                                                if (mob instanceof LivingEntity)
-                                                    applyEffects((LivingEntity) mob, i);
-                                            }
+                                        //Player Using Item
+                                        if (effectsPlayer) {
+                                            applyEffects(player, i);
+                                        } else {
+                                            if (mob instanceof LivingEntity)
+                                                applyEffects((LivingEntity) mob, i);
+                                        }
                                         //}
                                     }
                                 }
@@ -1393,9 +1373,9 @@ public class PluginMain extends JavaPlugin implements Listener {
                                     if ((needMeta == null) || (checkMeta.getDisplayName().equals(needMeta.getDisplayName()))) {
                                         if (check.getType().equals(neededItem.getType())) {
                                             //if ((neededItem.getType().getMaxDurability() > 0) || (check.getDurability() == (neededItem.getDurability()))) {
-                                                if (!itemsPlayerHas.contains(neededItem)) {
-                                                    itemsPlayerHas.add(neededItem);
-                                                }
+                                            if (!itemsPlayerHas.contains(neededItem)) {
+                                                itemsPlayerHas.add(neededItem);
+                                            }
                                             //}
                                         }
                                     }
@@ -1571,8 +1551,8 @@ public class PluginMain extends JavaPlugin implements Listener {
             } else if ((ability.equals("rust")) && (isLegitVictim(atc, playerIsVictom, ability))) {
                 ItemStack damItem = ((Player) vic).getInventory().getItemInMainHand();
                 if (((randomNum <= 3) || (randomNum == 1)) && (damItem.getMaxStackSize() == 1)) {
-                    int cDur = ((Damageable)damItem.getItemMeta()).getDamage();
-                    ((Damageable)damItem.getItemMeta()).setDamage(cDur + 20);
+                    int cDur = ((Damageable) damItem.getItemMeta()).getDamage();
+                    ((Damageable) damItem.getItemMeta()).setDamage(cDur + 20);
                 }
             } else if ((ability.equals("sapper")) && (isLegitVictim(atc, playerIsVictom, ability))) {
                 ((LivingEntity) vic).addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 500, 1), true);
@@ -2165,7 +2145,7 @@ public class PluginMain extends JavaPlugin implements Listener {
                 w.spawnParticle(Particle.valueOf(effect), l, 0, 0, 0, speed, amount);
             } else {
                 List<Location> ll = getArea(l, radius, 0.2);
-                if (ll.size() > 0){
+                if (ll.size() > 0) {
                     for (int i = 0; i < amount; i++) {
                         int index = new Random().nextInt(ll.size());
                         w.spawnParticle(Particle.valueOf(effect), ll.get(index), 1, 0, 0, 0, 0);
@@ -2174,8 +2154,8 @@ public class PluginMain extends JavaPlugin implements Listener {
                 }
             }
         } catch (Exception ex) {
-           // System.out.println("V: " + getServer().getVersion());
-           // ex.printStackTrace();
+            // System.out.println("V: " + getServer().getVersion());
+            // ex.printStackTrace();
         }
     }
 
@@ -2372,30 +2352,31 @@ public class PluginMain extends JavaPlugin implements Listener {
         return min + (int) (Math.random() * (1 + max - min));
     }
 
-    public ItemStack getDiviningStaff(){
-    	ItemStack s = getItem(Material.BLAZE_ROD, "§6§lDivining Rod", 1, Collections.singletonList("Click to find infernal mobs."));
-    	ItemMeta m = s.getItemMeta();
+    public ItemStack getDiviningStaff() {
+        ItemStack s = getItem(Material.BLAZE_ROD, "§6§lDivining Rod", 1, Collections.singletonList("Click to find infernal mobs."));
+        ItemMeta m = s.getItemMeta();
         if (m != null) {
             m.addEnchant(Enchantment.CHANNELING, 1, true);
             s.setItemMeta(m);
         }
-    	return s;
+        return s;
     }
 
     public void addRecipes() {
-    	ItemStack staff = getDiviningStaff();
-    	NamespacedKey key = new NamespacedKey(this, "divining_staff");
-    	ShapedRecipe sr = new ShapedRecipe(key, staff);
-		sr.shape("ANA", "ASA", "ASA");
-		sr.setIngredient('N', Material.NETHER_STAR);
-		sr.setIngredient('S', Material.BLAZE_ROD);
-		//sr.setIngredient('A', Material.AIR);
-		Bukkit.addRecipe(sr);
+        ItemStack staff = getDiviningStaff();
+        NamespacedKey key = new NamespacedKey(this, "divining_staff");
+        ShapedRecipe sr = new ShapedRecipe(key, staff);
+        sr.shape("ANA", "ASA", "ASA");
+        sr.setIngredient('N', Material.NETHER_STAR);
+        sr.setIngredient('S', Material.BLAZE_ROD);
+        //sr.setIngredient('A', Material.AIR);
+        Bukkit.removeRecipe(key);
+        Bukkit.addRecipe(sr);
     }
 
-    private ItemStack getItem(Material mat, String name, int amount, List<String> loreList){
-    	ItemStack item = new ItemStack(mat, amount);
-    	ItemMeta m = item.getItemMeta();
+    private ItemStack getItem(Material mat, String name, int amount, List<String> loreList) {
+        ItemStack item = new ItemStack(mat, amount);
+        ItemMeta m = item.getItemMeta();
         if (m != null) {
             if (name != null)
                 m.setDisplayName(name);
@@ -2403,7 +2384,7 @@ public class PluginMain extends JavaPlugin implements Listener {
                 m.setLore(loreList);
             item.setItemMeta(m);
         }
-  	  	return item;
+        return item;
     }
 
 }

@@ -13,16 +13,16 @@ public class InfernalSpawnEvent extends Event implements Cancellable {
     private final InfernalMob infernal;
     private boolean cancelled;
 
-    public InfernalSpawnEvent(Entity entity, InfernalMob infernal){
+    public InfernalSpawnEvent(Entity entity, InfernalMob infernal) {
         this.entity = entity;
         this.infernal = infernal;
     }
 
-    public Entity getEntity(){
+    public Entity getEntity() {
         return this.entity;
     }
 
-    public InfernalMob getInfernal(){
+    public InfernalMob getInfernal() {
         return this.infernal;
     }
 

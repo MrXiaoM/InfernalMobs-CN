@@ -15,8 +15,10 @@ public class PDC {
     private static NamespacedKey key(String key) {
         return new NamespacedKey("InfernalMobs", key);
     }
+
     public static final NamespacedKey SPAWNER_DELAY = key("spawner_delay");
     public static final NamespacedKey ABILITIES = key("abilities");
+
     @Nullable
     public static Integer getSpawnerDelay(CreatureSpawner spawner) {
         PersistentDataContainer pdc = spawner.getPersistentDataContainer();

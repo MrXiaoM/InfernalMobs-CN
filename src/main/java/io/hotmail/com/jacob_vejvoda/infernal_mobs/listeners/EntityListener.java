@@ -1,7 +1,7 @@
 package io.hotmail.com.jacob_vejvoda.infernal_mobs.listeners;
 
-import io.hotmail.com.jacob_vejvoda.infernal_mobs.utils.PDC;
 import io.hotmail.com.jacob_vejvoda.infernal_mobs.PluginMain;
+import io.hotmail.com.jacob_vejvoda.infernal_mobs.utils.PDC;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -15,17 +15,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.EntityBreedEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.entity.*;
+import org.bukkit.event.player.*;
 import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
@@ -44,106 +35,107 @@ public class EntityListener implements Listener {
     public EntityListener(PluginMain instance) {
         plugin = instance;
     }
-    
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerInteract(PlayerInteractEvent e) {
-    	Player target = e.getPlayer();
-    	try {
-    		ItemStack s = plugin.getDiviningStaff();
+        Player target = e.getPlayer();
+        try {
+            ItemStack s = plugin.getDiviningStaff();
             ItemMeta meta = s.getItemMeta();
             ItemMeta handMeta = target.getInventory().getItemInMainHand().getItemMeta();
             if (meta != null && handMeta != null && handMeta.getDisplayName().equals(meta.getDisplayName())) {
-    	        Entity source = GUI.getNearbyBoss(target);
-    	        //System.out.println("GB");
-    	        //Make Look At
-    	        if(source != null) {
-    	        	//Take Powder
-    	        	boolean took = false;
-    	        	for(ItemStack i : target.getInventory())
-    	        		if(i != null && i.getType().equals(Material.BLAZE_POWDER)) {
-    	        			if(i.getAmount() == 1) {
-    	        				target.getInventory().remove(i);
-    	        			}else
-    	        				i.setAmount(i.getAmount()-1);
-    	        			took = true;
-    	        			break;
-    	        		}
-    	        	if(!took) {
-    	        		target.sendMessage("§cYou need blaze powder to use this!");
-    	        		return;
-    	        	}
-    	        	//Change Looking
-	    	        Vector direction = getVector(target).subtract(getVector(source)).normalize();
-	    	        double x = direction.getX();
-	    	        double y = direction.getY();
-	    	        double z = direction.getZ();
-	    	     
-	    	        // Now change the angle
-	    	        Location changed = target.getLocation().clone();
-	    	        changed.setYaw(180 - toDegree(Math.atan2(x, z)));
-	    	        changed.setPitch(90 - toDegree(Math.acos(y)));
-	    	        target.teleport(changed);
-	    	        //Beam
-	    	        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                Entity source = GUI.getNearbyBoss(target);
+                //System.out.println("GB");
+                //Make Look At
+                if (source != null) {
+                    //Take Powder
+                    boolean took = false;
+                    for (ItemStack i : target.getInventory())
+                        if (i != null && i.getType().equals(Material.BLAZE_POWDER)) {
+                            if (i.getAmount() == 1) {
+                                target.getInventory().remove(i);
+                            } else
+                                i.setAmount(i.getAmount() - 1);
+                            took = true;
+                            break;
+                        }
+                    if (!took) {
+                        target.sendMessage("§cYou need blaze powder to use this!");
+                        return;
+                    }
+                    //Change Looking
+                    Vector direction = getVector(target).subtract(getVector(source)).normalize();
+                    double x = direction.getX();
+                    double y = direction.getY();
+                    double z = direction.getZ();
+
+                    // Now change the angle
+                    Location changed = target.getLocation().clone();
+                    changed.setYaw(180 - toDegree(Math.atan2(x, z)));
+                    changed.setPitch(90 - toDegree(Math.acos(y)));
+                    target.teleport(changed);
+                    //Beam
+                    Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                         //Shoot Beam
                         Location eyeLoc = target.getEyeLocation();
                         double px = eyeLoc.getX();
                         double py = eyeLoc.getY();
                         double pz = eyeLoc.getZ();
-                        double yaw  = Math.toRadians(eyeLoc.getYaw() + 90);
+                        double yaw = Math.toRadians(eyeLoc.getYaw() + 90);
                         double pitch = Math.toRadians(eyeLoc.getPitch() + 90);
                         double x1 = Math.sin(pitch) * Math.cos(yaw);
                         double y1 = Math.sin(pitch) * Math.sin(yaw);
                         double z1 = Math.cos(pitch);
-                        for (int j = 1 ; j <= 10 ; j++) {
-                            for (int i = 1 ; i <= 10 ; i++) {
+                        for (int j = 1; j <= 10; j++) {
+                            for (int i = 1; i <= 10; i++) {
                                 Location loc = new Location(target.getWorld(), px + (i * x1), py + (i * z1), pz + (i * y1));
                                 beamParticals(loc);
                             }
                         }
                     }, 5);
-    	        }
-    		}
-    	} catch(Exception ignored) {}
+                }
+            }
+        } catch (Exception ignored) {
+        }
     }
-    
-    private void beamParticals(Location loc){
-    	int speed = -1;
-    	int amount = 1;
+
+    private void beamParticals(Location loc) {
+        int speed = -1;
+        int amount = 1;
         double r = 0;
         plugin.displayParticle(Particle.DRIP_LAVA.toString(), loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), r, speed, amount);
     }
-     
+
     private float toDegree(double angle) {
         return (float) Math.toDegrees(angle);
     }
-     
+
     private Vector getVector(Entity entity) {
         if (entity instanceof Player)
             return ((Player) entity).getEyeLocation().toVector();
         else
             return entity.getLocation().toVector();
     }
-    
+
     @EventHandler
     public void onEntityBreed(EntityBreedEvent e) {
-    	if(e.getBreeder() instanceof Player) {
-    		Player p = (Player) e.getBreeder();
-    		if (plugin.fertileList.contains(p)) {
-    			for (int i = 0; i < plugin.rand(1, 4); i++) {
+        if (e.getBreeder() instanceof Player) {
+            Player p = (Player) e.getBreeder();
+            if (plugin.fertileList.contains(p)) {
+                for (int i = 0; i < plugin.rand(1, 4); i++) {
                     LivingEntity entity = e.getEntity();
                     LivingEntity babe = (LivingEntity) entity.getWorld().spawnEntity(entity.getLocation(), e.getEntityType());
-    				if (babe instanceof Ageable)
-    					((Ageable) babe).setBaby();
-    				if (babe instanceof Sheep && entity instanceof Sheep) {
+                    if (babe instanceof Ageable)
+                        ((Ageable) babe).setBaby();
+                    if (babe instanceof Sheep && entity instanceof Sheep) {
                         DyeColor color = ((Sheep) entity).getColor();
                         ((Sheep) babe).setColor(color);
                     }
-    			}
-    		}
-    	}
+                }
+            }
+        }
     }
-    
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerItemConsumeEvent(PlayerItemConsumeEvent e) {
         Player p = e.getPlayer();
@@ -311,8 +303,8 @@ public class EntityListener implements Listener {
     public void onMobSpawn(CreatureSpawnEvent event) {
         World world = event.getEntity().getWorld();
         if ((!event.getEntity().hasMetadata("NPC")) && (!event.getEntity().hasMetadata("shopkeeper")) && event.getEntity().getCustomName() == null) {
-        	if(event.getEntity().getType().equals(EntityType.ENDER_DRAGON))
-        		plugin.getLogger().log(Level.INFO, "Detected Entity Spawn: Ender Dragon");
+            if (event.getEntity().getType().equals(EntityType.ENDER_DRAGON))
+                plugin.getLogger().log(Level.INFO, "Detected Entity Spawn: Ender Dragon");
             if (event.getSpawnReason().equals(CreatureSpawnEvent.SpawnReason.SPAWNER)) {
                 Block block = plugin.blockNear(event.getEntity().getLocation(), Material.SPAWNER, 10);
                 BlockState state = block == null ? null : block.getState();

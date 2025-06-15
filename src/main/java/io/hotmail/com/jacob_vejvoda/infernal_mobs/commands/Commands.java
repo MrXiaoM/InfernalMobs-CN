@@ -1,8 +1,8 @@
 package io.hotmail.com.jacob_vejvoda.infernal_mobs.commands;
 
+import io.hotmail.com.jacob_vejvoda.infernal_mobs.PluginMain;
 import io.hotmail.com.jacob_vejvoda.infernal_mobs.data.InfernalMob;
 import io.hotmail.com.jacob_vejvoda.infernal_mobs.utils.PDC;
-import io.hotmail.com.jacob_vejvoda.infernal_mobs.PluginMain;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 public class Commands implements CommandExecutor, TabCompleter {
     private final PluginMain plugin;
+
     public Commands(PluginMain plugin) {
         this.plugin = plugin;
         PluginCommand command = plugin.getCommand("infernalmobs");
@@ -33,7 +34,7 @@ public class Commands implements CommandExecutor, TabCompleter {
             command.setTabCompleter(this);
         }
     }
-    
+
     private FileConfiguration getConfig() {
         return plugin.getConfig();
     }
@@ -311,9 +312,9 @@ public class Commands implements CommandExecutor, TabCompleter {
                             sender.sendMessage("§eKilled all infernal mobs near you!");
                         } else if ((args[0].equalsIgnoreCase("killall")) && (args.length == 1 || args.length == 2)) {
                             World w = null;
-                            if (args.length == 1 && sender instanceof Player){
+                            if (args.length == 1 && sender instanceof Player) {
                                 w = ((Player) sender).getWorld();
-                            } else if (args.length == 2){
+                            } else if (args.length == 2) {
                                 w = Bukkit.getServer().getWorld(args[1]);
                             }
 
@@ -376,7 +377,7 @@ public class Commands implements CommandExecutor, TabCompleter {
 
     @Override
     @Nullable
-    public List<String> onTabComplete(CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args){
+    public List<String> onTabComplete(CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         List<String> allAbilitiesList = new ArrayList<>(Arrays.asList("confusing", "ghost", "morph", "mounted", "flying", "gravity", "firework", "necromancer", "archer", "molten", "mama", "potions", "explode", "berserk", "weakness", "vengeance", "webber", "storm", "sprint", "lifesteal", "ghastly", "ender", "cloaked", "1up", "sapper", "rust", "bullwark", "quicksand", "thief", "tosser", "withering", "blinding", "armoured", "poisonous"));
         Set<String> commands = new HashSet<>(Arrays.asList("reload", "worldInfo", "error", "getloot", "setloot", "giveloot", "abilities", "showAbilities", "setInfernal", "spawn", "cspawn", "pspawn", "kill", "killall"));
         if (sender.hasPermission("infernal_mobs.commands")) {
@@ -392,35 +393,35 @@ public class Commands implements CommandExecutor, TabCompleter {
                     }
                 }
             }
-            if (args[0].equalsIgnoreCase("getloot") || args[0].equalsIgnoreCase("setloot")){
-                if (args.length == 2){
+            if (args[0].equalsIgnoreCase("getloot") || args[0].equalsIgnoreCase("setloot")) {
+                if (args.length == 2) {
                     newTab.add("1");
                 }
             }
-            if (args[0].equalsIgnoreCase("giveloot")){
-                if (args.length == 2){
+            if (args[0].equalsIgnoreCase("giveloot")) {
+                if (args.length == 2) {
                     newTab.addAll(Bukkit.getOnlinePlayers().stream().map(HumanEntity::getName).collect(Collectors.toList()));
                 }
-                if (args.length == 3){
+                if (args.length == 3) {
                     newTab.add("1");
                 }
             }
-            if (args[0].equalsIgnoreCase("setinfernal")){
-                if (args.length == 2){
+            if (args[0].equalsIgnoreCase("setinfernal")) {
+                if (args.length == 2) {
                     newTab.add("10");
                 }
             }
-            if (args.length == 2){
-                if (args[0].equalsIgnoreCase("spawn") || args[0].equalsIgnoreCase("cspawn") || args[0].equalsIgnoreCase("pspawn")){
+            if (args.length == 2) {
+                if (args[0].equalsIgnoreCase("spawn") || args[0].equalsIgnoreCase("cspawn") || args[0].equalsIgnoreCase("pspawn")) {
                     if (args[1].isEmpty())
-                        newTab.addAll(Arrays.stream(EntityType.values()).filter(m->m.isSpawnable() && m.isAlive()).map(Enum::name).collect(Collectors.toList()));
+                        newTab.addAll(Arrays.stream(EntityType.values()).filter(m -> m.isSpawnable() && m.isAlive()).map(Enum::name).collect(Collectors.toList()));
                     else
-                        Arrays.stream(EntityType.values()).filter(m->m.isSpawnable() && m.isAlive()).map(Enum::name).collect(Collectors.toList()).forEach(tab->{
+                        Arrays.stream(EntityType.values()).filter(m -> m.isSpawnable() && m.isAlive()).map(Enum::name).collect(Collectors.toList()).forEach(tab -> {
                             if (tab.toLowerCase().startsWith(args[1].toLowerCase()))
                                 newTab.add(tab);
                         });
                 }
-                if (args[0].equalsIgnoreCase("killall")){
+                if (args[0].equalsIgnoreCase("killall")) {
                     if (args[args.length - 1].isEmpty())
                         newTab.addAll(Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList()));
                     else
@@ -429,7 +430,7 @@ public class Commands implements CommandExecutor, TabCompleter {
                                 newTab.add(tab);
                         });
                 }
-                if (args[0].equalsIgnoreCase("kill")){
+                if (args[0].equalsIgnoreCase("kill")) {
                     newTab.add("1");
                 }
             }
@@ -446,12 +447,12 @@ public class Commands implements CommandExecutor, TabCompleter {
                 if (args.length > 3 && args.length < 7) {
                     newTab.add("~");
                 }
-                if (args.length >= 7){
-                    if (args[args.length-1].isEmpty())
+                if (args.length >= 7) {
+                    if (args[args.length - 1].isEmpty())
                         newTab.addAll(allAbilitiesList);
                     else
-                        allAbilitiesList.forEach(tab->{
-                            if (tab.toLowerCase().startsWith(args[args.length-1].toLowerCase()))
+                        allAbilitiesList.forEach(tab -> {
+                            if (tab.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
                                 newTab.add(tab);
                         });
                 }
@@ -466,23 +467,23 @@ public class Commands implements CommandExecutor, TabCompleter {
                                 newTab.add(tab);
                         });
                 }
-                if (args.length > 3){
-                    if (args[args.length-1].isEmpty())
+                if (args.length > 3) {
+                    if (args[args.length - 1].isEmpty())
                         newTab.addAll(allAbilitiesList);
                     else
-                        allAbilitiesList.forEach(tab->{
-                            if (tab.toLowerCase().startsWith(args[args.length-1].toLowerCase()))
+                        allAbilitiesList.forEach(tab -> {
+                            if (tab.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
                                 newTab.add(tab);
                         });
                 }
             }
-            if (args.length >= 3){
-                if (args[0].equalsIgnoreCase("spawn")){
-                    if (args[args.length-1].isEmpty())
+            if (args.length >= 3) {
+                if (args[0].equalsIgnoreCase("spawn")) {
+                    if (args[args.length - 1].isEmpty())
                         newTab.addAll(allAbilitiesList);
                     else
-                        allAbilitiesList.forEach(tab->{
-                            if (tab.toLowerCase().startsWith(args[args.length-1].toLowerCase()))
+                        allAbilitiesList.forEach(tab -> {
+                            if (tab.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
                                 newTab.add(tab);
                         });
                 }

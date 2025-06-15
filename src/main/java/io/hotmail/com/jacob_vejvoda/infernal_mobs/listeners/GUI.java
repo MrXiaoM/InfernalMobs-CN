@@ -1,15 +1,18 @@
 package io.hotmail.com.jacob_vejvoda.infernal_mobs.listeners;
 
+import io.hotmail.com.jacob_vejvoda.infernal_mobs.PluginMain;
 import io.hotmail.com.jacob_vejvoda.infernal_mobs.data.InfernalMob;
 import io.hotmail.com.jacob_vejvoda.infernal_mobs.utils.PDC;
-import io.hotmail.com.jacob_vejvoda.infernal_mobs.PluginMain;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Damageable;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
