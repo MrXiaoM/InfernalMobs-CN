@@ -6,20 +6,20 @@ import java.util.List;
 import java.util.UUID;
 
 public class InfernalMob {
-    private boolean infernal;
+    private final boolean infernal;
     Entity entity;
     UUID id;
     int lives;
     String effect;
     List<String> abilityList;
 
-    InfernalMob(Entity type, UUID i, boolean in, List<String> l, int li, String e) {
+    InfernalMob(Entity type, UUID id, boolean infernal, List<String> abilityList, int lives, String effect) {
         this.entity = type;
-        this.id = i;
-        this.infernal = in;
-        this.abilityList = l;
-        this.lives = li;
-        this.effect = e;
+        this.id = id;
+        this.infernal = infernal;
+        this.abilityList = abilityList;
+        this.lives = lives;
+        this.effect = effect;
     }
 
     public String toString() {

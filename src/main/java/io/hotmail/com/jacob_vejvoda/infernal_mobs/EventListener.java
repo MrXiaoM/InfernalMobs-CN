@@ -6,6 +6,7 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.CreatureSpawner;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -26,19 +27,17 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 public class EventListener implements Listener {
     private static infernal_mobs plugin;
-    private HashMap<String, Long> spawnerMap = new HashMap<>();
+    private final Map<String, Long> spawnerMap = new HashMap<>();
 
     EventListener(infernal_mobs instance) {
         plugin = instance;
@@ -46,33 +45,32 @@ public class EventListener implements Listener {
     
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerInteract(PlayerInteractEvent e) {
-    	Player p = e.getPlayer();
+    	Player target = e.getPlayer();
     	try {
     		ItemStack s = plugin.getDiviningStaff();
-    		if(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName().equals(s.getItemMeta().getDisplayName())) {
-    	        Entity b = GUI.getNearbyBoss(p);
+            ItemMeta meta = s.getItemMeta();
+            ItemMeta handMeta = target.getInventory().getItemInMainHand().getItemMeta();
+            if (meta != null && handMeta != null && handMeta.getDisplayName().equals(meta.getDisplayName())) {
+    	        Entity source = GUI.getNearbyBoss(target);
     	        //System.out.println("GB");
     	        //Make Look At
-    	        if(b != null) {
+    	        if(source != null) {
     	        	//Take Powder
     	        	boolean took = false;
-    	        	for(ItemStack i : p.getInventory())
+    	        	for(ItemStack i : target.getInventory())
     	        		if(i != null && i.getType().equals(Material.BLAZE_POWDER)) {
     	        			if(i.getAmount() == 1) {
-    	        				p.getInventory().remove(i);
+    	        				target.getInventory().remove(i);
     	        			}else
     	        				i.setAmount(i.getAmount()-1);
     	        			took = true;
     	        			break;
     	        		}
     	        	if(!took) {
-    	        		p.sendMessage("§cYou need blaze powder to use this!");
+    	        		target.sendMessage("§cYou need blaze powder to use this!");
     	        		return;
     	        	}
     	        	//Change Looking
-	    			Entity source = b;
-	    			Entity target = p;
-	    	     
 	    	        Vector direction = getVector(target).subtract(getVector(source)).normalize();
 	    	        double x = direction.getX();
 	    	        double y = direction.getY();
@@ -84,29 +82,27 @@ public class EventListener implements Listener {
 	    	        changed.setPitch(90 - toDegree(Math.acos(y)));
 	    	        target.teleport(changed);
 	    	        //Beam
-	    	        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable(){
-	    	        	public void run(){
-	    	    			//Shoot Beam
-	    	    			Location eyeLoc = p.getEyeLocation();
-	    	    			double px = eyeLoc.getX();
-	    	    			double py = eyeLoc.getY();
-	    	    			double pz = eyeLoc.getZ();
-	    	    			double yaw  = Math.toRadians(eyeLoc.getYaw() + 90);
-	    	    			double pitch = Math.toRadians(eyeLoc.getPitch() + 90);
-	    	    			double x = Math.sin(pitch) * Math.cos(yaw);
-	    	    			double y = Math.sin(pitch) * Math.sin(yaw);
-	    	    			double z = Math.cos(pitch);
-	    	    			for (int j = 1 ; j <= 10 ; j++) {
-	    		    			for (int i = 1 ; i <= 10 ; i++) {
-	    							Location loc = new Location(p.getWorld(), px + (i * x), py + (i * z), pz + (i * y));
-	    							beamParticals(loc);
-	    		    			}
-	    	    			}
-	    	        	}
-	    	        }, 5);
+	    	        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                        //Shoot Beam
+                        Location eyeLoc = target.getEyeLocation();
+                        double px = eyeLoc.getX();
+                        double py = eyeLoc.getY();
+                        double pz = eyeLoc.getZ();
+                        double yaw  = Math.toRadians(eyeLoc.getYaw() + 90);
+                        double pitch = Math.toRadians(eyeLoc.getPitch() + 90);
+                        double x1 = Math.sin(pitch) * Math.cos(yaw);
+                        double y1 = Math.sin(pitch) * Math.sin(yaw);
+                        double z1 = Math.cos(pitch);
+                        for (int j = 1 ; j <= 10 ; j++) {
+                            for (int i = 1 ; i <= 10 ; i++) {
+                                Location loc = new Location(target.getWorld(), px + (i * x1), py + (i * z1), pz + (i * y1));
+                                beamParticals(loc);
+                            }
+                        }
+                    }, 5);
     	        }
     		}
-    	}catch(Exception x) {}
+    	} catch(Exception ignored) {}
     }
     
     private void beamParticals(Location loc){
@@ -131,13 +127,16 @@ public class EventListener implements Listener {
     public void onEntityBreed(EntityBreedEvent e) {
     	if(e.getBreeder() instanceof Player) {
     		Player p = (Player) e.getBreeder();
-    		if(plugin.fertileList.contains(p)) {
-    			for(int i = 0; i < plugin.rand(1, 4); i++) {
-    				LivingEntity babe = (LivingEntity) e.getEntity().getLocation().getWorld().spawnEntity(e.getEntity().getLocation(), e.getEntityType());
-    				if(babe instanceof Ageable)
-    					((Ageable)babe).setBaby();
-    				if(e.getEntity() instanceof Sheep)
-    					((Sheep)babe).setColor(((Sheep)e.getEntity()).getColor());
+    		if (plugin.fertileList.contains(p)) {
+    			for (int i = 0; i < plugin.rand(1, 4); i++) {
+                    LivingEntity entity = e.getEntity();
+                    LivingEntity babe = (LivingEntity) entity.getWorld().spawnEntity(entity.getLocation(), e.getEntityType());
+    				if (babe instanceof Ageable)
+    					((Ageable) babe).setBaby();
+    				if (babe instanceof Sheep && entity instanceof Sheep) {
+                        DyeColor color = ((Sheep) entity).getColor();
+                        ((Sheep) babe).setColor(color);
+                    }
     			}
     		}
     	}
@@ -145,17 +144,26 @@ public class EventListener implements Listener {
     
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerItemConsumeEvent(PlayerItemConsumeEvent e) {
-    	Player p = e.getPlayer();
-    	ItemStack check = e.getItem();
-    	YamlConfiguration lootFile = plugin.lootFile;
-        if (lootFile.getString("consumeEffects") != null)
-            for (String id : lootFile.getConfigurationSection("consumeEffects").getKeys(false))
-                if (lootFile.getString("consumeEffects." + id + ".requiredItem") != null) {
-                	ItemStack neededItem = plugin.getItem(lootFile.getInt("consumeEffects." + id + ".requiredItem"));
-                    if ((neededItem.getItemMeta() != null) && (check.getItemMeta().getDisplayName().equals(neededItem.getItemMeta().getDisplayName()))) 
-                    	if (check.getType().equals(neededItem.getType()))
-                    		plugin.applyEatEffects(p, Integer.parseInt(id));
+        Player p = e.getPlayer();
+        ItemStack check = e.getItem();
+        YamlConfiguration lootFile = plugin.lootFile;
+        ConfigurationSection section = lootFile.getConfigurationSection("consumeEffects");
+        if (section != null) for (String id : section.getKeys(false)) {
+            int requireItemId = lootFile.getInt("consumeEffects." + id + ".requiredItem", -1);
+            if (requireItemId >= 0) {
+                ItemStack neededItem = plugin.getItem(requireItemId);
+                ItemMeta needMeta = neededItem.getItemMeta();
+                ItemMeta checkMeta = check.getItemMeta();
+                if (needMeta != null && checkMeta != null) {
+                    if (checkMeta.getDisplayName().equals(needMeta.getDisplayName())) {
+                        if (check.getType().equals(neededItem.getType())) {
+                            plugin.applyEatEffects(p, Integer.parseInt(id));
+                        }
+                    }
                 }
+
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -291,9 +299,8 @@ public class EventListener implements Listener {
                     }
                 }
             }
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, e.getMessage());
-            e.printStackTrace();
+        } catch (Exception ex) {
+            plugin.getLogger().log(Level.SEVERE, "", ex);
         }
     }
 
@@ -357,7 +364,7 @@ public class EventListener implements Listener {
         }
     }
 
-    @SuppressWarnings({"unchecked", "deprecation", "rawtypes"})
+    @SuppressWarnings({"deprecation"})
     @EventHandler(priority = EventPriority.HIGH)
     public void onEntityDeath(EntityDeathEvent event) {
         try {
@@ -378,26 +385,28 @@ public class EventListener implements Listener {
                 }
                 boolean isGhost = false;
                 try {
-                    if (entity.getEquipment().getHelmet().getItemMeta().getDisplayName().equals("§fGhost Head")) {
+                    EntityEquipment equipment = entity.getEquipment();
+                    ItemStack helmet = equipment == null ? null : equipment.getHelmet();
+                    ItemMeta meta = helmet == null ? null : helmet.getItemMeta();
+                    if (meta != null && meta.getDisplayName().equals("§fGhost Head")) {
                         isGhost = true;
                     }
-                } catch (Exception localException1) {
+                } catch (Exception ignored) {
                 }
                 if (aList.contains("ghost")) {
                     plugin.spawnGhost(entity.getLocation());
                 }
                 Location dropSpot;
                 if (aList.contains("molten")) {
-                    Location lavaSpot = entity.getLocation();
-                    dropSpot = lavaSpot;
+                    dropSpot = entity.getLocation();
                     dropSpot.setX(dropSpot.getX() - 2.0D);
                 } else {
                     dropSpot = entity.getLocation();
                 }
-                if ((plugin.getConfig().getBoolean("enableDeathMessages")) && ((entity.getKiller() instanceof Player)) && (!isGhost)) {
+                if (plugin.getConfig().getBoolean("enableDeathMessages") && entity.getKiller() != null && !isGhost) {
                     Player player = entity.getKiller();
                     if (plugin.getConfig().getList("deathMessages") != null) {
-                        ArrayList<String> deathMessagesList = (ArrayList) plugin.getConfig().getList("deathMessages");
+                        List<String> deathMessagesList = plugin.getConfig().getStringList("deathMessages");
                         Random randomGenerator = new Random();
                         int index = randomGenerator.nextInt(deathMessagesList.size());
                         String deathMessage = deathMessagesList.get(index);
@@ -405,8 +414,9 @@ public class EventListener implements Listener {
                         deathMessage = ChatColor.translateAlternateColorCodes('&', deathMessage);
                         deathMessage = deathMessage.replace("player", player.getName());
                         if ((player.getItemInHand() != null) && (!player.getItemInHand().getType().equals(Material.AIR))) {
-                            if (player.getItemInHand().getItemMeta().getDisplayName() != null) {
-                                deathMessage = deathMessage.replace("weapon", player.getItemInHand().getItemMeta().getDisplayName());
+                            ItemMeta meta = player.getItemInHand().getItemMeta();
+                            if (meta != null && meta.hasDisplayName()) {
+                                deathMessage = deathMessage.replace("weapon", meta.getDisplayName());
                             } else {
                                 deathMessage = deathMessage.replace("weapon", player.getItemInHand().getType().name().replace("_", " ").toLowerCase());
                             }
@@ -424,10 +434,9 @@ public class EventListener implements Listener {
                     }
                 }
                 if ((plugin.getConfig().getBoolean("enableDrops")) &&
-                        ((plugin.getConfig().getBoolean("enableFarmingDrops")) || (entity.getKiller() != null)) &&
-                        ((plugin.getConfig().getBoolean("enableFarmingDrops")) || ((entity.getKiller() instanceof Player)))) {
+                        ((plugin.getConfig().getBoolean("enableFarmingDrops")) || (entity.getKiller() != null))) {
                     Player player = null;
-                    if ((entity.getKiller() instanceof Player)) {
+                    if ((entity.getKiller() != null)) {
                         player = entity.getKiller();
                     }
                     if ((player != null) && (player.getGameMode().equals(GameMode.CREATIVE)) && (plugin.getConfig().getBoolean("noCreativeDrops"))) {

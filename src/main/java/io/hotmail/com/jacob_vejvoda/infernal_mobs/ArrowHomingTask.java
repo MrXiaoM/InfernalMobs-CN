@@ -7,8 +7,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 class ArrowHomingTask extends BukkitRunnable {
-    private Arrow arrow;
-    private LivingEntity target;
+    private final Arrow arrow;
+    private final LivingEntity target;
 
     ArrowHomingTask(Arrow arrow, LivingEntity target, Plugin plugin) {
         this.arrow = arrow;
