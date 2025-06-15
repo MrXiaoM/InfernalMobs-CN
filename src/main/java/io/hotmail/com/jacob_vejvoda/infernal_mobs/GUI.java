@@ -13,16 +13,17 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.logging.Level;
 
 public class GUI implements Listener {
     private static infernal_mobs plugin;
-    private static HashMap<String, Scoreboard> playerScoreBoard = new HashMap<String, Scoreboard>();
-    private static HashMap<Entity, Object> bossBars = new HashMap<Entity, Object>();
+    private static final Map<String, Scoreboard> playerScoreBoard = new HashMap<>();
+    private static final Map<Entity, Object> bossBars = new HashMap<>();
 
     GUI(infernal_mobs instance) {
         plugin = instance;
@@ -34,7 +35,7 @@ public class GUI implements Listener {
             if (m.entity.getWorld().equals(p.getWorld())) {
                 Entity boss = m.entity;
                 if (p.getLocation().distance(boss.getLocation()) < dis) {
-                    dis = p.getLocation().distance(boss.getLocation());
+                    // dis = p.getLocation().distance(boss.getLocation());
                     return boss;
                 }
             }
@@ -54,15 +55,10 @@ public class GUI implements Listener {
                         for (Player p2 : ((BossBar) bossBars.get(b)).getPlayers())
                             ((BossBar) bossBars.get(b)).removePlayer(p2);
                         bossBars.remove(b);
-                    } catch (Exception x) {
+                    } catch (Exception ignored) {
                     }
                 }
-                int mobIndex = plugin.idSearch(b.getUniqueId());
-                try {
-                    if (mobIndex != -1)
-                        plugin.removeMob(mobIndex);
-                } catch (IOException e) {
-                }
+                PDC.setAbilities(b, null);
                 clearInfo(p);
             } else {
                 if (plugin.getConfig().getBoolean("enableBossBar")) {
@@ -233,7 +229,7 @@ public class GUI implements Listener {
         String mobName = translateEntityTypeToZHCN(mobType);
         String prefix = plugin.getConfig().getString("namePrefix", "&f精英");
         if (plugin.getConfig().getString("levelPrefixs." + oldMobAbilityList.size()) != null) {
-            prefix = plugin.getConfig().getString("levelPrefixs." + oldMobAbilityList.size());
+            prefix = plugin.getConfig().getString("levelPrefixs." + oldMobAbilityList.size(), "");
         }
         tittle = tittle.replace("<prefix>", prefix.substring(0, 1).toUpperCase() + prefix.substring(1));
         tittle = tittle.replace("<mobName>", mobName);
@@ -248,9 +244,8 @@ public class GUI implements Listener {
                     break;
                 }
             } while (tittle.length() + abilities.length() + mobName.length() > 64);
-        } catch (Exception x) {
-            System.out.println("showBossBar error: ");
-            x.printStackTrace();
+        } catch (Exception ex) {
+            plugin.getLogger().log(Level.WARNING, "showBossBar error: ", ex);
         }
         tittle = tittle.replace("<abilities>", abilities.substring(0, 1).toUpperCase() + abilities.substring(1));
         tittle = ChatColor.translateAlternateColorCodes('&', tittle);
@@ -295,8 +290,11 @@ public class GUI implements Listener {
         if (plugin.getConfig().getBoolean("enableScoreBoard")) {
             try {
                 player.getScoreboard().resetScores(player);
-                player.getScoreboard().getObjective(DisplaySlot.SIDEBAR).unregister();
-            } catch (Exception localException1) {
+                Objective objective = player.getScoreboard().getObjective(DisplaySlot.SIDEBAR);
+                if (objective != null) {
+                    objective.unregister();
+                }
+            } catch (Exception ignored) {
             }
         }
     }
@@ -317,11 +315,12 @@ public class GUI implements Listener {
             Objective o;
             Scoreboard board = playerScoreBoard.get(player.getName());
             //System.out.println("Board = " + board);
-            if (board.getObjective(DisplaySlot.SIDEBAR) == null) {
+            Objective objective = board.getObjective(DisplaySlot.SIDEBAR);
+            if (objective == null) {
                 o = board.registerNewObjective(player.getName(), "dummy");
                 o.setDisplaySlot(DisplaySlot.SIDEBAR);
             } else {
-                o = board.getObjective(DisplaySlot.SIDEBAR);
+                o = objective;
             }
             //System.out.println("sb3");
             //Name
@@ -348,7 +347,7 @@ public class GUI implements Listener {
             o.getScore("§e§lAbilities:").setScore(score);
             //Health
             //System.out.println("sb5");
-            if (plugin.getConfig().getBoolean("showHealthOnScoreBoard") == true) {
+            if (plugin.getConfig().getBoolean("showHealthOnScoreBoard")) {
                 //System.out.println("shosb");
                 //Display HP
                 score = score + 1;
@@ -365,7 +364,11 @@ public class GUI implements Listener {
             }
             //System.out.println("sb6");
             //Display
-            if ((player.getScoreboard() == null) || (player.getScoreboard().getObjective(DisplaySlot.SIDEBAR) == null) || (player.getScoreboard().getObjective(DisplaySlot.SIDEBAR).getName() == null) || (!player.getScoreboard().getObjective(DisplaySlot.SIDEBAR).getName().equals(board.getObjective(DisplaySlot.SIDEBAR).getName()))) {
+            Scoreboard scoreboard = player.getScoreboard();
+            Objective objective1 = scoreboard.getObjective(DisplaySlot.SIDEBAR);
+            String name = objective == null ? null : objective.getName();
+            String name1 = objective1 == null ? null : objective1.getName();
+            if ((objective1 == null) || !Objects.equals(name, name1)) {
                 //System.out.println("Set SB");
                 player.setScoreboard(board);
             }
@@ -383,9 +386,8 @@ public class GUI implements Listener {
                     ent.setCustomNameVisible(true);
                 }
             }
-        } catch (Exception x) {
-            System.out.println("Error in setName: ");
-            x.printStackTrace();
+        } catch (Exception ex) {
+            plugin.getLogger().log(Level.WARNING, "Error in setName: ", ex);
         }
     }
 
@@ -406,14 +408,13 @@ public class GUI implements Listener {
             } while ((tittle.length() + abilities.length() + mobName.length()) > 64);
             tittle = tittle.replace("<abilities>", abilities.substring(0, 1).toUpperCase() + abilities.substring(1));
             //Prefix
-            String prefix = plugin.getConfig().getString("namePrefix");
+            String prefix = plugin.getConfig().getString("namePrefix", "");
             if (plugin.getConfig().getString("levelPrefixs." + oldMobAbilityList.size()) != null)
-                prefix = plugin.getConfig().getString("levelPrefixs." + oldMobAbilityList.size());
+                prefix = plugin.getConfig().getString("levelPrefixs." + oldMobAbilityList.size(), "");
             tittle = tittle.replace("<prefix>", prefix.substring(0, 1).toUpperCase() + prefix.substring(1));
             tittle = ChatColor.translateAlternateColorCodes('&', tittle);
-        } catch (Exception x) {
-            plugin.getLogger().log(Level.SEVERE, x.getMessage());
-            x.printStackTrace();
+        } catch (Exception ex) {
+            plugin.getLogger().log(Level.SEVERE, "", ex);
         }
         return tittle;
     }

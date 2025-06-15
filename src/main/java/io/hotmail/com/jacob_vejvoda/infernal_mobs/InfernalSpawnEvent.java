@@ -4,20 +4,21 @@ import org.bukkit.entity.Entity;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 public class InfernalSpawnEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
-    private Entity ent;
-    private InfernalMob infernal;
+    private final Entity entity;
+    private final InfernalMob infernal;
     private boolean cancelled;
 
-    public InfernalSpawnEvent(Entity ent, InfernalMob infernal){
-        this.ent = ent;
+    public InfernalSpawnEvent(Entity entity, InfernalMob infernal){
+        this.entity = entity;
         this.infernal = infernal;
     }
 
     public Entity getEntity(){
-        return this.ent;
+        return this.entity;
     }
 
     public InfernalMob getInfernal(){
@@ -35,6 +36,7 @@ public class InfernalSpawnEvent extends Event implements Cancellable {
     }
 
     @Override
+    @NotNull
     public HandlerList getHandlers() {
         return handlers;
     }
