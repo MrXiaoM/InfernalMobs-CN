@@ -13,7 +13,7 @@ import java.util.List;
 public class PDC {
     @SuppressWarnings({"deprecation"})
     private static NamespacedKey key(String key) {
-        return new NamespacedKey("InfernalMobs", key);
+        return new NamespacedKey("infernalmobs", key);
     }
 
     public static final NamespacedKey SPAWNER_DELAY = key("spawner_delay");
